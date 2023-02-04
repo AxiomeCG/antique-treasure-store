@@ -1,5 +1,5 @@
 import { Canvas } from "@react-three/fiber";
-import { PerspectiveCamera, useGLTF } from "@react-three/drei";
+import { Environment, PerspectiveCamera, useGLTF } from "@react-three/drei";
 import React, { useLayoutEffect, useRef } from "react";
 import * as THREE from "three";
 import { Euler, Quaternion, Vector3 } from "three";
@@ -103,8 +103,10 @@ export const ThreeViewer = () => {
     <div className="canvas-container">
       <Canvas>
         <CameraKeyframes/>
-        <ambientLight intensity={0.3}/>
         <Model/>
+        <Environment resolution={1024} preset="warehouse" >
+
+        </Environment>
       </Canvas>
     </div>
   )
