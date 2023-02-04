@@ -43,19 +43,20 @@ function CameraKeyframes() {
 
   useLayoutEffect(() => {
     let ctx = gsap.context(() => {
-      const tl = gsap.timeline( {
-        scrollTrigger: {
-          scrub: true,
-        }
-      })
+
       let scrollTriggerParams = {
         start: "top bottom",
         end: "top top",
         markers: true,
+        toggleActions: "play pause resume reverse",
+        immediateRender: false
       };
-      //FIRST SECTION
-
-      tl.to(cameraRef.current.position, {
+     gsap.timeline( {
+        scrollTrigger: {
+          ...scrollTriggerParams,
+          trigger: '.section-2'
+        }
+      }).to(cameraRef.current.position, {
         x: cameraKeyframes[1].position.x,
         y: cameraKeyframes[1].position.y,
         z: cameraKeyframes[1].position.z,
@@ -66,7 +67,13 @@ function CameraKeyframes() {
           y: cameraKeyframes[1].rotation.y,
           z: cameraKeyframes[1].rotation.z,
         }, 'label0')
-        //SECOND SECTION
+
+      gsap.timeline( {
+        scrollTrigger: {
+          ...scrollTriggerParams,
+          trigger: '.section-3'
+        }
+      })
         .to(cameraRef.current.position, {
           x: cameraKeyframes[2].position.x,
           y: cameraKeyframes[2].position.y,
@@ -79,7 +86,7 @@ function CameraKeyframes() {
           z: cameraKeyframes[2].rotation.z,
 
         }, 'label1')
-    }); // <- scopes all selector text inside the context to this component (optional, default is document)
+    });
 
     return () => ctx.revert(); // cleanup!
   }, [])
