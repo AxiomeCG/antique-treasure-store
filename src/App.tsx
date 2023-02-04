@@ -1,12 +1,12 @@
 import React from "react"
-import "./App.css"
-import { Three } from "./Three";
+import "./App.scss"
+import { ThreeViewer } from "./ThreeViewer";
 
 
 function App() {
 
   return (<>
-      <Three/>
+      <ThreeViewer/>
       <div className="scroll-container">
         <section className="section-1">
           Section 1
