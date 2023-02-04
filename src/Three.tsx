@@ -1,29 +1,38 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { PerspectiveCamera, useGLTF } from "@react-three/drei";
-import React, { useEffect, useState } from "react";
+import { PerspectiveCamera, Scroll, useGLTF } from "@react-three/drei";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useControls } from "leva";
 import { useScroll } from "framer-motion";
 import * as Controls from "three/examples/jsm/controls/OrbitControls";
-import { Quaternion, Vector3 } from "three";
+import { Euler, Quaternion, Vector3 } from "three";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import * as THREE from "three"
+
+gsap.registerPlugin(ScrollTrigger)
 
 interface CameraKeyframes {
   position: Vector3;
   target: Vector3;
-  quaternion: Quaternion;
+  rotation: Euler;
 }
 
 export const cameraKeyframes: CameraKeyframes[] = [
   {
     position: new Vector3(2.8, 0.6, 4.9),
     target: new Vector3(-2.79, -0.13, 0.49),
-    quaternion: new Quaternion(-0.05, 0.43, 0.02, 0.9),
+    rotation: new Euler().setFromQuaternion(new Quaternion(-0.05, 0.43, 0.02, 0.9)),
   },
   {
     position: new Vector3(0.4, 3.4, 1.1),
     target: new Vector3(0.87, -1.27, 0.69),
-    quaternion: new Quaternion(-0.59, -0.33, -0.29, 0.7),
-  }
+    rotation: new Euler().setFromQuaternion(new Quaternion(-0.59, -0.33, -0.29, 0.7)),
+  },
+  {
+    position: new Vector3(2.8, 0.6, 4.9),
+    target: new Vector3(-2.79, -0.13, 0.49),
+    rotation: new Euler().setFromQuaternion(new Quaternion(-0.05, 0.43, 0.02, 0.9)),
+  },
 ]
 
 function Model() {
@@ -33,7 +42,7 @@ function Model() {
 }
 
 function CameraKeyframes() {
-
+  const cameraRef = useRef<THREE.PerspectiveCamera>(null!)
   const [bundle, set] = useControls(() => ({
     position: {
       x: 3, y: 1, z: 1
@@ -51,62 +60,38 @@ function CameraKeyframes() {
     w: 1
   }))
 
+  useLayoutEffect(() => {
+    const tl = gsap.timeline({
 
-  const {scrollYProgress} = useScroll();
-  const [index, setIndex] = useState(Math.floor((scrollYProgress.get() * 2)));
-
-  scrollYProgress.on("change", (latest) => {
-    setIndex(Math.floor(latest * 2))
-  })
-
-  const camera = useThree(engine => engine.camera)
-
-  const switchView = (index: number) => {
-    const timeline = gsap.timeline();
-
-    const savedQuaternion = camera.quaternion.clone()
-
-    timeline.to(camera.position, {
-      x: cameraKeyframes[index].position.x,
-      y: cameraKeyframes[index].position.y,
-      z: cameraKeyframes[index].position.z,
-      duration: 2,
-      onUpdate: () => {
-        const progress = timeline.progress();
-        const slerpedQuaternion = new Quaternion().slerpQuaternions(savedQuaternion, cameraKeyframes[index].quaternion, progress);
-        camera.quaternion.copy(slerpedQuaternion)
+      scrollTrigger: {
+        trigger: ".section-1",
+        start: "top top",
+        endTrigger: ".section-3",
+        end: "bottom bottom",
+        scrub: 1
       }
+
+    });
+
+
+    tl
+      .to(cameraRef.current.position, { duration: 1, x: cameraKeyframes[1].position.x, y:cameraKeyframes[1].position.y, z: cameraKeyframes[1].position.z },'label0')
+      .to(cameraRef.current.rotation, { duration: 1, x: cameraKeyframes[1].rotation.x, y:cameraKeyframes[1].rotation.y, z: cameraKeyframes[1].rotation.z }, 'label0')
+      .to(cameraRef.current.position, { duration: 1, x: cameraKeyframes[0].position.x, y:cameraKeyframes[0].position.y, z: cameraKeyframes[0].position.z },'label1')
+      .to(cameraRef.current.rotation, { duration: 1, x: cameraKeyframes[0].rotation.x, y:cameraKeyframes[0].rotation.y, z: cameraKeyframes[0].rotation.z }, 'label1')
+
+
+    ScrollTrigger.create({
+      scroller: '.scroll-container',
+      animation: tl
     })
-  }
-  useEffect(() => {
-    console.log(index);
-    if (index >= 1) {
-      console.log("animate");
-      switchView(1)
-    } else {
-      switchView(0)
-    }
-  }, [index])
 
-  useFrame((engine) => {
-    const orbitControls = engine.controls as Controls.OrbitControls;
-
-    if (orbitControls && orbitControls.object) {
-      set({
-        position: [orbitControls.object.position.x, orbitControls.object.position.y, orbitControls.object.position.z],
-        target: [orbitControls.target.x, orbitControls.target.y, orbitControls.target.z],
-        quaternion: {
-          x: orbitControls.object.quaternion.x,
-          y: orbitControls.object.quaternion.y,
-          z: orbitControls.object.quaternion.z,
-        },
-        w: orbitControls.object.quaternion.w,
-      })
-    }
   })
+
 
   return <>
-
+    <PerspectiveCamera ref={cameraRef} makeDefault fov={50} position={cameraKeyframes[0].position}
+                       rotation={cameraKeyframes[0].rotation}/>
   </>;
 }
 
@@ -115,8 +100,7 @@ export const Three = () => {
   return (
     <div className="canvas-container">
       <Canvas>
-        <PerspectiveCamera makeDefault fov={50} position={cameraKeyframes[0].position}
-                           quaternion={cameraKeyframes[0].quaternion}/>
+
         <CameraKeyframes/>
         <ambientLight intensity={0.3}/>
         <Model/>
