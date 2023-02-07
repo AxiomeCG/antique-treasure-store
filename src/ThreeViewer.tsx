@@ -34,7 +34,42 @@ export const cameraKeyframes: CameraKeyframes[] = [
 
 function Model() {
 
-  const gltf = useGLTF("/scene.glb")
+  const gltf = useGLTF("/scene.glb");
+
+  useLayoutEffect(() => {
+    let ctx = gsap.context(() => {
+
+      let scrollTriggerParams = {
+        start: "top bottom",
+        end: "top top",
+        toggleActions: "play none none reverse",
+        scrub: 1
+      };
+      gsap.timeline({
+        scrollTrigger: {
+          ...scrollTriggerParams,
+          trigger: ".section-2"
+        }
+      })
+        .to(gltf.scene.rotation, {
+          y: 2*Math.PI,
+        }, "<")
+
+      gsap.timeline({
+        scrollTrigger: {
+          ...scrollTriggerParams,
+          trigger: ".section-3"
+        }
+      })
+        .to(gltf.scene.rotation, {
+          z: 2 * Math.PI,
+        }, "<")
+
+    });
+
+    return () => ctx.revert(); // cleanup!
+  }, [])
+
   return <primitive object={gltf.scene}></primitive>;
 }
 
@@ -48,24 +83,24 @@ function CameraKeyframes() {
         start: "top bottom",
         end: "top top",
         toggleActions: "play none none reverse",
-        scrub: true
+        scrub: 0.5,
       };
       gsap.timeline({
         scrollTrigger: {
           ...scrollTriggerParams,
-          trigger: ".section-2"
+          trigger: ".section-2",
         }
       }).to(cameraRef.current.position, {
         x: cameraKeyframes[1].position.x,
         y: cameraKeyframes[1].position.y,
         z: cameraKeyframes[1].position.z,
 
-      }, "label0")
+      })
         .to(cameraRef.current.rotation, {
           x: cameraKeyframes[1].rotation.x,
           y: cameraKeyframes[1].rotation.y,
           z: cameraKeyframes[1].rotation.z,
-        }, "label0")
+        }, "<")
 
       gsap.timeline({
         scrollTrigger: {
@@ -78,13 +113,13 @@ function CameraKeyframes() {
           y: cameraKeyframes[2].position.y,
           z: cameraKeyframes[2].position.z,
 
-        }, "label1")
+        })
         .to(cameraRef.current.rotation, {
           x: cameraKeyframes[2].rotation.x,
           y: cameraKeyframes[2].rotation.y,
           z: cameraKeyframes[2].rotation.z,
 
-        }, "label1")
+        }, "<")
     });
 
     return () => ctx.revert(); // cleanup!
