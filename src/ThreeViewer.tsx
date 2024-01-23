@@ -14,6 +14,8 @@ interface CameraKeyframes {
   rotation: Euler;
 }
 
+
+
 export const cameraKeyframes: CameraKeyframes[] = [
   {
     position: new Vector3(2.8, 0.6, 4.9),
@@ -39,6 +41,7 @@ function Model() {
 }
 
 function CameraKeyframes() {
+
   const cameraRef = useRef<THREE.PerspectiveCamera>(null!);
 
   useLayoutEffect(() => {
